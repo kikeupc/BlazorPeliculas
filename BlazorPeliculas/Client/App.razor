@@ -1,0 +1,35 @@
+﻿@using Microsoft.AspNetCore.Components.WebAssembly.Services;
+@using System.Reflection;
+@inject LazyAssemblyLoader lazyLoader
+
+<Router AppAssembly="@typeof(App).Assembly"
+        OnNavigateAsync="OnNavigateAsync"
+        AdditionalAssemblies="assemblies"
+   >
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not found</PageTitle>
+        <LayoutView Layout="@typeof(MainLayout)">
+           @* <p role="alert">Sorry, there's nothing at this address.</p>*@
+           <CustomNotFound/>
+        </LayoutView>
+    </NotFound>
+</Router>
+
+@code{
+    private List<Assembly> assemblies = new List<Assembly>(); // Listado de referecnias a cargar con la carga peresoza
+
+    private async Task OnNavigateAsync(NavigationContext args)
+    {
+        if (args.Path.EndsWith("counter"))
+        {
+            var assembliesCargados = await lazyLoader.LoadAssembliesAsync(
+                new List<string> { "MathNet.Numerics.dll" }
+            );
+            assemblies.AddRange(assembliesCargados);
+        }
+    }
+}
